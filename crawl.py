@@ -23,6 +23,17 @@ import dataset
 import sys
 
 
+def is_crawled(url):
+    # check if url is already crawled
+    with dataset.connect(DATABASE_URL) as db:
+        if db['result'].find_one(crawl_url=url):
+            print("Already crawled", url)
+            return True
+        else:
+            print ("Not crawled", url)
+            return False
+
+
 def run():
     # get commandline args
     args = parse_args()
@@ -48,7 +59,8 @@ def run():
         url = url.strip()
         if not urlparse(url).scheme:
             url = 'http://' + url
-        url_queue.put((url, 0))
+        if not is_crawled(url):
+            url_queue.put((url, 0))
 
     log = Logger().log if not args.quiet else lambda *args, **kwargs: None
 
